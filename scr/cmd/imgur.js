@@ -1,41 +1,45 @@
 const axios = require("axios");
+const fs = require("fs");
+const path = require("path");
 
-module.exports.config = {
-  name: "imgur",
-  accessableby: 0,
-  author: "Deku",
-  description: "Upload a photo to Imgur and return the link",
-  usage: "[reply to a photo]",
-  prefix: true
-};
+module.exports = {
+  config: {
+    name: "imgur",
+    description: "Convert a photo into an Imgur link",
+    usage: "[reply with photo]",
+    cooldown: 5,
+    accessableby: 0,
+    category: "Utilities",
+    prefix: true
+  },
+  start: async function ({ api, event, react, reply }) {
+    // Check if the message is a reply to another message with an attachment
+    if (event.type !== "message_reply" || !event.messageReply.attachments || event.messageReply.attachments.length === 0) {
+      return reply("Please reply to a photo to convert it into an Imgur link.");
+    }
 
-module.exports.start = async function ({ api, event }) {
-  const clientId = "fc9369e9aea767c"; // Replace with your actual Imgur client ID
+    const attachment = event.messageReply.attachments[0];
+    if (attachment.type !== "photo") {
+      return reply("Please reply to a photo to convert it into an Imgur link.");
+    }
 
-  if (event.type !== "message_reply" || !event.messageReply.attachments.length || event.messageReply.attachments[0].type !== "photo") {
-    return api.sendMessage("Please reply to a photo that you want to upload to Imgur.", event.threadID, event.messageID);
-  }
+    const photoUrl = attachment.url;
 
-  const imageUrl = event.messageReply.attachments[0].url;
+    try {
+      react("⏳"); // React with an hourglass emoji to indicate processing
 
-  try {
-    const response = await axios.post(
-      "https://api.imgur.com/3/image",
-      {
-        image: imageUrl,
-      },
-      {
-        headers: {
-          Authorization: `Client-ID ${clientId}`
-        }
-      }
-    );
+      const response = await axios.get(`https://my-api-v1.onrender.com/api/imgur?link=${encodeURIComponent(photoUrl)}`);
+      const imgurLink = response.data.link;
 
-    const imgurLink = response.data.data.link;
+      react("✅"); // React with a check mark emoji to indicate success
 
-    return api.sendMessage(`Uploaded successfully: ${imgurLink}`, event.threadID, event.messageID);
-  } catch (error) {
-    console.error(`Error uploading to Imgur: ${error.message}`);
-    return api.sendMessage("Failed to upload the photo to Imgur. Please try again later.", event.threadID, event.messageID);
+      return reply(`Here is your Imgur link: ${imgurLink}`);
+    } catch (error) {
+      console.error(`Error uploading to Imgur: ${error.message}`);
+      return reply("Failed to upload the photo to Imgur. Please try again later.");
+    }
+  },
+  auto: async function ({ api, event, text, reply }) {
+    // No auto functionality for this command
   }
 };
