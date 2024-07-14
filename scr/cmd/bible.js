@@ -10,8 +10,8 @@ module.exports = {
     category: 'Religious', // Example category
     prefix: false
   },
-  start: async function ({ api, event, reply }) {
-    reply('🙏 Fetching a random Bible verse, please wait...');
+  start: async function ({ api, event, reply, react }) {
+    react('⏳ Fetching a random Bible verse, please wait...');
 
     try {
       const response = await axios.get('https://joshweb.click/bible');
@@ -29,6 +29,7 @@ module.exports = {
       };
 
       api.sendMessage(message, event.threadID);
+      react('✅');
     } catch (error) {
       console.error('Error fetching Bible verse:', error.message);
       reply('An error occurred while fetching the Bible verse.');
