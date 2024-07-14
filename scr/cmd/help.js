@@ -1,3 +1,5 @@
+const fs = require("fs");
+
 module.exports = {
   config: {
     name: "help",
@@ -6,7 +8,6 @@ module.exports = {
     prefix: true
   },
   start: async function ({ text, reply }) {
-    const fs = require("fs");
     try {
       const path = process.cwd() + "/scr/cmd";
       const files = fs.readdirSync(path);
@@ -16,31 +17,36 @@ module.exports = {
 
       let page;
       let commandsPerPage;
-      
+      let output = "";
+
       if (text[0] === "all") {
-        page = 1;
-        commandsPerPage = commands.length;
+        output += "━━𝙰𝙻𝙻 𝙲𝙾𝙼𝙼𝙰𝙽𝙳𝚂━━\n";
+        commands.forEach(command => {
+          output += ` ⊂⊃ ➥ ${command.name}\n`;
+        });
+        output += "━━━━━━━━━━━━━━━\n";
+        output += "━━HERU CHATBOT AI━━\n";
+        output += `Total commands: ${commands.length}`;
       } else {
         page = parseInt(text[0], 10) || 1;
         commandsPerPage = 10;
+        const totalPages = Math.ceil(commands.length / commandsPerPage);
+
+        if (page < 1 || page > totalPages) return reply("Invalid page number.");
+
+        const startIndex = (page - 1) * commandsPerPage;
+        const commandList = commands.slice(startIndex, startIndex + commandsPerPage);
+
+        output += "━━𝙲𝙾𝙼𝙼𝙰𝙽𝙳𝚂━━\n";
+        commandList.forEach(command => {
+          output += ` ⊂⊃ ➥ ${command.name}\n`;
+        });
+        output += "━━━━━━━━━━━━━━━\n";
+        output += `━━𝙲𝙾𝙼𝙼𝙰𝙽𝙳 𝙿𝙰𝙶𝙴 : <${page}/${totalPages}>━━\n`;
+        output += "━━HERU CHATBOT AI━━\n";
+        output += `Total commands: ${commands.length}\n`;
+        output += `Type "help all" to see all commands.`;
       }
-      
-      const totalPages = Math.ceil(commands.length / commandsPerPage);
-
-      if (page < 1 || page > totalPages) return reply("Invalid page number.");
-
-      const startIndex = (page - 1) * commandsPerPage;
-      const commandList = commands.slice(startIndex, startIndex + commandsPerPage);
-
-      let output = "━━𝙲𝙾𝙼𝙼𝙰𝙽𝙳𝚂━━\n";
-      commandList.forEach((command, index) => {
-        output += ` ⊂⊃ ➥ ${command.name}\n`;
-      });
-      output += "━━━━━━━━━━━━━━━\n";
-      output += `━━𝙲𝙾𝙼𝙼𝙰𝙽𝙳 𝙿𝙰𝙶𝙴 : <${page}/${totalPages}>━━\n`;
-      output += "━━HERU CHATBOT AI━━\n";
-      output += `Total commands: ${commands.length}\n`;
-      output += `Type "help all" to see all commands.`;
 
       return reply({ body: output });
     } catch (error) {
