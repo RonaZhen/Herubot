@@ -15,6 +15,7 @@ module["exports"] = class {
       const rest = (
         await get("https://joshweb.click" + "/api/llama-3-70b?q=" + encodeURI(ask))
       ).data;
+      react("✅");
       return reply("🦙 | 𝙻𝚕𝚊𝚖𝚊 𝚁𝚎𝚜𝚙𝚘𝚗𝚜𝚎\n━━━━━━━━━━━━━━━━━━\n" + rest.result);
     } catch (e) {
       return reply(e.message);
