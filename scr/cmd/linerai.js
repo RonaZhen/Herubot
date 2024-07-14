@@ -1,16 +1,14 @@
-const axios = require("axios");
-
-module.exports = {
-  config: {
+module["exports"] = class {
+  static config = {
     name: "linerai",
     description: "Query the Liner AI API",
-    usage: "[prompt]",
-    cooldown: 5,
+    prefix: false,
     accessableby: 0,
-    category: "AI",
-    prefix: false
-  },
-  start: async function ({ api, text, react, event, reply }) {
+    author: "heru",
+  };
+
+  static async start({ api, text, react, event, reply }) {
+    const axios = require("axios");
     const prompt = text.join(" ");
 
     if (!prompt) {
@@ -18,12 +16,14 @@ module.exports = {
     }
 
     try {
+      react("⏳");
       const response = await axios.get(`https://my-api-v1.onrender.com/api/liner?prompt=${encodeURIComponent(prompt)}`);
       
       // Check if the response structure is as expected
       if (response.data && response.data.answer) {
         const result = response.data.answer;
-        return reply("🤍 | 𝙻𝚒𝚗𝚎𝚛𝚊𝚒 𝚁𝚎𝚜𝚙𝚘𝚗𝚜𝚎\n━━━━━━━━━━━━━━━━━━\n" + result);
+        react('🤍');
+        return reply("🤍 | 𝙻𝚒𝚗𝚎𝚛𝚊𝚒 𝚁𝚎𝚜𝚙𝚘𝚗𝚜𝚎\n━━━━━━━━━━━━━━━━━━\n" + answer);
       } else {
         throw new Error("Unexpected API response structure.");
       }
@@ -31,8 +31,5 @@ module.exports = {
       console.error(`Error querying the API: ${error.message}`);
       return reply("Failed to query the API. Please try again later.");
     }
-  },
-  auto: async function ({ api, event, text, reply }) {
-    // No auto functionality for this command
   }
 };
