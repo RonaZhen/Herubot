@@ -1,40 +1,48 @@
 const axios = require("axios");
+const fs = require("fs");
+const path = require("path");
 
-module.exports.config = {
-  name: "fbcover",
-  accessableby: 0,
-  author: "heru",
-  description: "Generate a Facebook cover image",
-  usage: "[name] [subname] [sdt] [address] [email] [uid] [color]",
-  prefix: false
-};
+module.exports = {
+  config: {
+    name: "fbcover",
+    accessableby: 0,
+    author: "heru",
+    description: "Generate a Facebook cover image",
+    usage: "[name] [subname] [sdt] [address] [email] [uid] [color]",
+    prefix: false
+  },
+  start: async function ({ api, event, text, reply }) {
+    // Check if the user provided the required parameters
+    if (text.length < 7) {
+      return reply("Please provide all required parameters: [name] [subname] [sdt] [address] [email] [uid] [color]");
+    }
 
-module.exports.start = async function ({ api, event, text }) {
-  // Check if the user provided the required parameters
-  if (text.length < 7) {
-    return api.sendMessage("Please provide all required parameters: [name] [subname] [sdt] [address] [email] [uid] [color]", event.threadID, event.messageID);
-  }
+    const [name, subname, sdt, address, email, uid, color] = text;
 
-  const [name, subname, sdt, address, email, uid, color] = text;
+    try {
+      const response = await axios.get(`https://joshweb.click/canvas/fbcover`, {
+        params: { name, subname, sdt, address, email, uid, color },
+        responseType: "arraybuffer" // To handle image data
+      });
 
-  try {
-    const response = await axios.get(`https://joshweb.click/canvas/fbcover`, {
-      params: {
-        name,
-        subname,
-        sdt,
-        address,
-        email,
-        uid,
-        color
+      const cacheDir = path.join(__dirname, "cache");
+      if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir);
       }
-    });
 
-    const imageUrl = response.data.url; // Assuming the API returns a URL to the generated image
+      const imagePath = path.join(cacheDir, "cover.png");
+      fs.writeFileSync(imagePath, response.data);
 
-    return api.sendMessage(`Generated cover image: ${imageUrl}`, event.threadID, event.messageID);
-  } catch (error) {
-    console.error(`Error generating cover image: ${error.message}`);
-    return api.sendMessage("Failed to generate the cover image. Please try again later.", event.threadID, event.messageID);
+      return api.sendMessage({
+        body: "Generated cover image:",
+        attachment: fs.createReadStream(imagePath)
+      }, event.threadID, event.messageID);
+    } catch (error) {
+      console.error(`Error generating cover image: ${error.message}`);
+      return reply("Failed to generate the cover image. Please try again later.");
+    }
+  },
+  auto: async function ({ api, event, text, reply }) {
+    // No auto functionality for this command
   }
 };
