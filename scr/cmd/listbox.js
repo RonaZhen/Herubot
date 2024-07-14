@@ -12,8 +12,7 @@ module.exports = {
 
   start: async function ({ api, event, reply }) {
     try {
-      let num = 0;
-      let box = "";
+      let boxList = "";
 
       // Fetch up to 100 threads in the INBOX category
       api.getThreadList(100, null, ["INBOX"], (err, list) => {
@@ -22,14 +21,20 @@ module.exports = {
           return reply("Failed to fetch thread list. Please try again later.");
         }
 
+        let num = 0;
         list.forEach(info => {
           if (info.isGroup && info.isSubscribed) {
-            box += `${++num}. ${info.name} - ${info.threadID}\n`;
+            boxList += `⊂⊃ ➥ ${++num}. ${info.name} - ${info.threadID}\n`;
           }
         });
 
+        if (!boxList) {
+          boxList = "No groups found containing the bot.";
+        }
+
         // Send the list of groups containing the bot back to the user
-        return reply(box);
+        const output = `━━𝙶𝚁𝙾𝚄𝙿 𝙻𝙸𝚂𝚃━━\n${boxList}━━━━━━━━━━━━━━━\nTotal groups: ${num}`;
+        return reply(output);
       });
     } catch (error) {
       console.error("Error processing command:", error.message);
