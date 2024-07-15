@@ -1,15 +1,18 @@
 const axios = require('axios');
+const moment = require('moment-timezone');
 
-module.exports = class {
-  static config = {
+module.exports = {
+  config: {
     name: "ai",
     description: "Get a response from various AI models",
-    prefix: false,
+    usage: "ai [model] [query]",
+    cooldown: 5,
     accessableby: 0,
+    category: "Entertainment",
+    prefix: false,
     author: "heru",
-  };
-
-  static async start({ text, api, event, reply, react }) {
+  },
+  start: async function({ text, api, event, reply, react }) {
     try {
       if (text.length < 2) {
         const availableModels = [
@@ -21,7 +24,13 @@ module.exports = class {
           "gemini",
           "gptweb",
           "palm2",
-          "nemotron"
+          "nemotron",
+          "gpt41",
+          "gpt42",
+          "atom",
+          "meta",
+          "mistral",
+          "claude"
         ];
         const modelList = availableModels.map(model => `- ${model}`).join("\n");
 
@@ -52,7 +61,7 @@ module.exports = class {
           url = `https://my-api-v1.onrender.com/api/blackbox?prompt=${encodeURIComponent(query)}`;
           break;
         case "gemini":
-          url = `https://joshweb.click/new/gemini?prompt=${encodeURIComponent(query)}`;
+          url = `https://joshweb.click/api/gemini?prompt=${encodeURIComponent(query)}`;
           break;
         case "gptweb":
           url = `https://joshweb.click/gptweb?prompt=${encodeURIComponent(query)}`;
@@ -63,12 +72,33 @@ module.exports = class {
         case "nemotron":
           url = `https://joshweb.click/api/nemotron?q=${encodeURIComponent(query)}`;
           break;
+        case "gpt41":
+          url = `https://my-api-v1.onrender.com/api/v1/gpt4?ask=${encodeURIComponent(query)}`;
+          break;
+        case "gpt42":
+          url = `https://my-api-v1.onrender.com/api/v2/gpt4?query=${encodeURIComponent(query)}`;
+          break;
+        case "atom":
+          url = `https://hiroshi-rest-api.replit.app/ai/atom?ask=${encodeURIComponent(query)}`;
+          break;
+        case "meta":
+          url = `https://hiroshi-rest-api.replit.app/ai/llama?ask=${encodeURIComponent(query)}`;
+          break;
+        case "mistral":
+          url = `https://hiroshi-rest-api.replit.app/ai/mistral8x7B?ask=${encodeURIComponent(query)}`;
+          break;
+        case "claude":
+          url = `https://hiroshi-rest-api.replit.app/ai/claude?ask=${encodeURIComponent(query)}`;
+          break;
         default:
           react("❌");
-          return reply("Invalid model! Available models: gpt4o, gemma, mixtral, catgpt, blackbox, gemini, gptweb, palm2, nemotron");
+          return reply("Invalid model! Available models: gpt4o, gemma, mixtral, catgpt, blackbox, gemini, gptweb, palm2, nemotron, gpt41, gpt42, atom, meta, mistral, claude");
       }
 
+      const startTime = Date.now();
       const response = await axios.get(url);
+      const endTime = Date.now();
+
       const result = response.data.response || response.data.result;
 
       if (!result) {
@@ -76,12 +106,15 @@ module.exports = class {
         return reply("The AI response was undefined. Please try again.");
       }
 
+      const responseTime = (endTime - startTime) / 1000; // in seconds
+      const currentTime = moment().tz("Asia/Manila").format("YYYY-MM-DD HH:mm:ss z");
       react("✅");
-      return reply(`🤖 | ${model.toUpperCase()} 𝐑𝐞𝐬𝐩𝐨𝐧𝐬𝐞\n━━━━━━━━━━━━━━━━━━\n${result}`);
+
+      return reply(`🤖 | ${model.toUpperCase()} 𝐌𝐨𝐝𝐞𝐥 𝐑𝐞𝐬𝐩𝐨𝐧𝐬𝐞\n━━━━━━━━━━━━━━━━━━\n${result}\n━━━━━━━━━━━━━━━━━━\nResponse time: ${responseTime.toFixed(2)} seconds\nCurrent time: ${currentTime}`);
     } catch (error) {
       react("❌");
       return reply(`An error occurred: ${error.message}`);
     }
   }
 };
-      
+          
