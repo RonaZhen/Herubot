@@ -1,37 +1,76 @@
-const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
+const axios = require("axios");
+const fs = require("fs");
+const path = require("path");
 
 module["exports"] = class {
   static config = {
     name: "dalle",
-    description: "Generate a random image using DALL-E",
-    prefix: false,
+    description: "Generate images using DALL-E",
+    usage: "[prompt]",
+    cooldown: 5,
     accessableby: 0,
+    category: "Entertainment",
+    prefix: false,
     author: "heru",
   };
 
-  static async start({ text, api, event, reply, react }) {
-    try {
-      const prompt = text.join(" ");
-      if (!prompt) return reply("Please provide a prompt for the image generation.");
+  static async start({ api, event, text, reply, react }) {
+    const command = text[0];
+
+    if (command === "list") {
+      try {
+        react("⏳");
+        const response = await axios.get("https://joshweb.click/dalle/prompts");
+        const prompts = response.data.prompts;
+
+        if (!prompts || prompts.length === 0) {
+          react("❌");
+          return reply("No available prompts found.");
+        }
+
+        let promptList = "Available Prompts:\n\n";
+        prompts.forEach((prompt, index) => {
+          promptList += `${index + 1}. ${prompt}\n`;
+        });
+
+        react("✅");
+        return reply(promptList);
+      } catch (error) {
+        console.error("Error fetching prompts:", error);
+        react("❌");
+        return reply("An error occurred while fetching the prompts.");
+      }
+    } else {
+      let prompt = text.join(" ");
+      if (!prompt) {
+        react("❌");
+        return reply("[ ❗ ] - Missing prompt for the DALL-E command");
+      }
 
       react("⏳");
+      reply("Generating image, please wait...");
 
-      const url = `https://joshweb.click/dalle?prompt=${encodeURIComponent(prompt)}`;
-      const response = await axios.get(url, { responseType: 'arraybuffer' });
-      const imageBuffer = Buffer.from(response.data, 'binary');
+      try {
+        const response = await axios.get(`https://joshweb.click/dalle?prompt=${encodeURIComponent(prompt)}`, { responseType: 'arraybuffer' });
+        const imagePath = path.join(__dirname, "cache/dalle_image.png");
 
-      react("✅");
+        fs.writeFileSync(imagePath, response.data);
 
-      api.sendMessage({
-        body: `Here is your image based on the prompt: ${prompt}`,
-        attachment: imageBuffer
-      }, event.threadID, event.messageID);
+        const userInfo = await api.getUserInfo(event.senderID);
+        const requesterName = userInfo[event.senderID].name;
 
-    } catch (error) {
-      react("❌");
-      return reply(`An error occurred: ${error.message}`);
+        api.sendMessage({
+          body: `Here is the image you requested:\n\nPrompt: ${prompt}\n\nRequested by: ${requesterName}`,
+          attachment: fs.createReadStream(imagePath)
+        }, event.threadID, () => {
+          fs.unlinkSync(imagePath);
+          react("✅");
+        });
+      } catch (error) {
+        console.error("Error in DALL-E command:", error);
+        react("❌");
+        reply("An error occurred while processing your request.");
+      }
     }
   }
 };
