@@ -1,68 +1,77 @@
-const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
+const axios = require("axios");
+const fs = require("fs");
+const path = require("path");
+
+const styleList = {
+    "1": "anime",
+    "2": "fantasy",
+    "3": "pencil",
+    "4": "digital",
+    "5": "vintage",
+    "6": "3d (render)",
+    "7": "cyberpunk",
+    "8": "manga",
+    "9": "realistic",
+    "10": "demonic",
+    "11": "heavenly",
+    "12": "comic",
+    "13": "robotic"
+};
 
 module["exports"] = class {
   static config = {
     name: "sdxl",
-    description: "Generate an image using SDXL in various styles",
-    prefix: false,
+    description: "Generate images using SDXL",
+    usage: "<prompt> <style>",
+    cooldown: 5,
     accessableby: 0,
-    author: "heru",
+    category: "Entertainment",
+    prefix: false,
+    author: "chill",
   };
 
-  static async start({ text, api, event, reply, react }) {
+  static async start({ api, event, text, reply, react }) {
+    if (text.length < 2) {
+      return reply(`[ ❗ ] - Missing prompt or style for the SDXL command. Usage: sdxl <prompt> <style>\n\nAvailable styles:\n${Object.entries(styleList).map(([key, value]) => `${key}: ${value}`).join("\n")}`);
+    }
+
+    const prompt = text.slice(0, -1).join(" ");
+    const style = text[text.length - 1];
+
+    if (!Object.keys(styleList).includes(style)) {
+      return reply(`[ ❗ ] - Invalid style. Please choose a valid style number from 1 to 13.\n\nAvailable styles:\n${Object.entries(styleList).map(([key, value]) => `${key}: ${value}`).join("\n")}`);
+    }
+
+    react("⏳");
+    reply("Generating image, please wait...");
+
     try {
-      if (text.length < 2) {
-        return reply("Usage: sdxl [style] [prompt]\nAvailable styles: anime\nfantasy\npencil\ndigital\nvintage\n3d\ncyberpunk\nmanga\nrealistic\ndemonic\nheavenly\ncomic\mrobotic");
-      }
-
-      const [style, ...promptParts] = text;
-      const prompt = promptParts.join(" ");
-      if (!prompt) return reply("Please provide a prompt for the image generation.");
-
-      const styles = {
-        "anime": 1,
-        "fantasy": 2,
-        "pencil": 3,
-        "digital": 4,
-        "vintage": 5,
-        "3d": 6,
-        "cyberpunk": 7,
-        "manga": 8,
-        "realistic": 9,
-        "demonic": 10,
-        "heavenly": 11,
-        "comic": 12,
-        "robotic": 13
-      };
-
-      if (!styles.hasOwnProperty(style.toLowerCase())) {
-        return reply("Invalid style! Available styles: anime, fantasy, pencil, digital, vintage, 3d, cyberpunk, manga, realistic, demonic, heavenly, comic, robotic");
-      }
-
-      react("⏳");
-
-      const url = `https://joshweb.click/sdxl/list?style=${styles[style.toLowerCase()]}&prompt=${encodeURIComponent(prompt)}`;
-      const response = await axios.get(url, { responseType: 'arraybuffer' });
-      const imageBuffer = Buffer.from(response.data, 'binary');
-
-      const imagePath = path.join(__dirname, 'generate.png');
-      fs.writeFileSync(imagePath, imageBuffer);
-
-      react("✅");
-      api.sendMessage({
-        body: `Here is your image based on the style: ${style}\nPrompt: ${prompt}`,
-        attachment: fs.createReadStream(imagePath)
-      }, event.threadID, event.messageID, () => {
-        // Clean up the generated image file after sending
-        fs.unlinkSync(imagePath);
+      const response = await axios.get('https://joshweb.click/sdxl', {
+        params: {
+          q: prompt,
+          style: style
+        },
+        responseType: 'arraybuffer'
       });
 
+      const imagePath = path.join(__dirname, "cache/sdxl_image.png");
+      fs.writeFileSync(imagePath, response.data);
+
+      const userInfo = await api.getUserInfo(event.senderID);
+      const requesterName = userInfo[event.senderID].name;
+
+      api.sendMessage({
+        body: `Here is the image you requested:\n\nPrompt: ${prompt}\nStyle: ${styleList[style]}\n\nRequested by: ${requesterName}`,
+        attachment: fs.createReadStream(imagePath)
+      }, event.threadID, () => {
+        fs.unlinkSync(imagePath);
+        react("✅");
+      });
     } catch (error) {
+      console.error("API request error:", error);
       react("❌");
-      return reply(`An error occurred: ${error.message}`);
+      reply("An error occurred while processing your request.");
     }
   }
 };
-        
+    
