@@ -22,21 +22,12 @@ module["exports"] = class {
       const response = await axios.get(url, { responseType: 'arraybuffer' });
       const imageBuffer = Buffer.from(response.data, 'binary');
 
-      const dir = path.join(__dirname, '/cache');
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-
-      const imagePath = path.join(dir, 'dalle.png');
-      fs.writeFileSync(imagePath, imageBuffer);
-
       react("✅");
-      return reply(`Image generated and saved to ${imagePath}`, event.threadID, () => {
-        api.sendMessage({
-          body: `Here is your image based on the prompt: ${prompt}`,
-          attachment: fs.createReadStream(imagePath)
-        }, event.threadID);
-      });
+
+      api.sendMessage({
+        body: `Here is your image based on the prompt: ${prompt}`,
+        attachment: imageBuffer
+      }, event.threadID, event.messageID);
 
     } catch (error) {
       react("❌");
@@ -44,4 +35,3 @@ module["exports"] = class {
     }
   }
 };
-        
