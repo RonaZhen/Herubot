@@ -15,7 +15,7 @@ module.exports = {
       if (!fileName) return reply("Missing file name!");
 
       // Construct the full path to the target file in the src/cmd directory
-      let filePath = path.resolve(__dirname, 'src', 'cmd', fileName);
+      let filePath = path.resolve(__dirname, 'scr', 'cmd', fileName);
 
       // Check if the file exists
       fs.access(filePath, fs.constants.F_OK, (err) => {
