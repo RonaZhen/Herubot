@@ -1,37 +1,54 @@
-module.exports = {
-  config: {
+const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
+
+module["exports"] = class {
+  static config = {
     name: "spamleave",
     description: "Automatically leave the group chat if spam is detected",
-    usage: "No usage needed, it works automatically.",
+    usage: "spamleave on/off",
     cooldown: 0,
     accessableby: 0,
     category: "Moderation",
     prefix: false,
     author: "heru",
-  },
-  start: async function ({ api, event, reply, react }) {
+  };
+
+  static async start({ text, api, event, reply, react }) {
     try {
-      // This is a place to add spam detection logic. For demonstration, 
-      // we're using a simple spam threshold.
-      const spamThreshold = 5; // Number of messages within the threshold time
-      const thresholdTime = 5000; // Time window in milliseconds
+      const command = text[0];
       const senderID = event.senderID;
 
-      if (!global.spamTracker) {
-        global.spamTracker = {};
+      if (!global.spamSettings) {
+        global.spamSettings = {
+          enabled: false,
+          threshold: 10,
+          timeWindow: 5000,
+          tracker: {}
+        };
       }
 
-      if (!global.spamTracker[senderID]) {
-        global.spamTracker[senderID] = [];
+      if (command === "on") {
+        global.spamSettings.enabled = true;
+        return reply("Spam detection is now enabled.");
+      } else if (command === "off") {
+        global.spamSettings.enabled = false;
+        return reply("Spam detection is now disabled.");
+      }
+
+      if (!global.spamSettings.enabled) return;
+
+      if (!global.spamSettings.tracker[senderID]) {
+        global.spamSettings.tracker[senderID] = [];
       }
 
       const now = Date.now();
-      global.spamTracker[senderID] = global.spamTracker[senderID].filter(time => now - time <= thresholdTime);
-      global.spamTracker[senderID].push(now);
+      global.spamSettings.tracker[senderID] = global.spamSettings.tracker[senderID].filter(time => now - time <= global.spamSettings.timeWindow);
+      global.spamSettings.tracker[senderID].push(now);
 
-      if (global.spamTracker[senderID].length > spamThreshold) {
+      if (global.spamSettings.tracker[senderID].length > global.spamSettings.threshold) {
         react("🚫");
-        await reply("Don't spam please, I will leave!!");
+        await reply("You've been spamming, I will leave the chat now.");
 
         // Leave the group chat
         setTimeout(async () => {
@@ -41,8 +58,8 @@ module.exports = {
       }
 
       // Clean up old entries to prevent memory leak
-      for (let user in global.spamTracker) {
-        global.spamTracker[user] = global.spamTracker[user].filter(time => now - time <= thresholdTime);
+      for (let user in global.spamSettings.tracker) {
+        global.spamSettings.tracker[user] = global.spamSettings.tracker[user].filter(time => now - time <= global.spamSettings.timeWindow);
       }
 
     } catch (error) {
@@ -51,3 +68,4 @@ module.exports = {
     }
   }
 };
+                                        
