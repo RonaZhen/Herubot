@@ -1,6 +1,6 @@
 module.exports = {
   config: {
-    name: "ai",
+    name: "gpt",
     description: "Get a response from GPT-4",
     prefix: false,
     accessableby: 0,
