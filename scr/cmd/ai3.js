@@ -13,10 +13,10 @@ module.exports = {
       if (!query) return reply("Missing query!");
 
       react("⏳");
-      const response = await get(`https://my-api-v1.onrender.com/api/v2/gpt4?query=${encodeURI(query)}`);
-      const result = response.data.result;
+      const r = await get(`https://my-api-v1.onrender.com/api/v2/gpt4?query=${encodeURI(query)}`);
+      const result = r.data.response;
 
-      if (!result) {
+      if (!response) {
         react("❌");
         return reply("The AI response was undefined. Please try again.");
       }
