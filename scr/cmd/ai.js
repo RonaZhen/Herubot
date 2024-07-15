@@ -1,5 +1,4 @@
 const axios = require('axios');
-const moment = require('moment-timezone');
 
 module.exports = {
   config: {
@@ -107,14 +106,12 @@ module.exports = {
       }
 
       const responseTime = (endTime - startTime) / 1000; // in seconds
-      const currentTime = moment().tz("Asia/Manila").format("YYYY-MM-DD HH:mm:ss z");
       react("✅");
 
-      return reply(`🤖 | ${model.toUpperCase()} 𝐌𝐨𝐝𝐞𝐥 𝐑𝐞𝐬𝐩𝐨𝐧𝐬𝐞\n━━━━━━━━━━━━━━━━━━\n${result}\n━━━━━━━━━━━━━━━━━━\nResponse time: ${responseTime.toFixed(2)} seconds\nCurrent time: ${currentTime}`);
+      return reply(`🤖 | ${model.toUpperCase()} 𝐌𝐨𝐝𝐞𝐥 𝐑𝐞𝐬𝐩𝐨𝐧𝐬𝐞\n━━━━━━━━━━━━━━━━━━\n${result}\n━━━━━━━━━━━━━━━━━━\n⏰ 𝐑𝐞𝐬𝐩𝐨𝐧𝐬𝐞 𝐓𝐢𝐦𝐞: ${responseTime.toFixed(2)} seconds`);
     } catch (error) {
       react("❌");
       return reply(`An error occurred: ${error.message}`);
     }
   }
 };
-          
