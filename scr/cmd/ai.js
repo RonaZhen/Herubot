@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-module["exports"] = class {
+module.exports = class {
   static config = {
     name: "ai",
     description: "Get a response from various AI models",
@@ -19,7 +19,9 @@ module["exports"] = class {
           "catgpt",
           "blackbox",
           "gemini",
-          "gptweb"
+          "gptweb",
+          "palm2",
+          "nemotron"
         ];
         const modelList = availableModels.map(model => `- ${model}`).join("\n");
 
@@ -55,9 +57,15 @@ module["exports"] = class {
         case "gptweb":
           url = `https://joshweb.click/gptweb?prompt=${encodeURIComponent(query)}`;
           break;
+        case "palm2":
+          url = `https://joshweb.click/api/palm2?q=${encodeURIComponent(query)}`;
+          break;
+        case "nemotron":
+          url = `https://joshweb.click/api/nemotron?q=${encodeURIComponent(query)}`;
+          break;
         default:
           react("❌");
-          return reply("Invalid model! Available models: gpt4o, gemma, mixtral, catgpt, blackbox, gemini, gptweb");
+          return reply("Invalid model! Available models: gpt4o, gemma, mixtral, catgpt, blackbox, gemini, gptweb, palm2, nemotron");
       }
 
       const response = await axios.get(url);
@@ -76,4 +84,4 @@ module["exports"] = class {
     }
   }
 };
-            
+      
