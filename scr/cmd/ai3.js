@@ -1,6 +1,6 @@
 module.exports = {
   config: {
-    name: "ai",
+    name: "ai3",
     description: "Talk to GPT (conversational)",
     prefix: false,
     usage: "[ask]",
