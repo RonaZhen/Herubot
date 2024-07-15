@@ -14,7 +14,7 @@ module["exports"] = class {
   static async start({ text, api, event, reply, react }) {
     try {
       if (text.length < 2) {
-        return reply("Usage: sdxl [style] [prompt]\nAvailable styles: anime, fantasy, pencil, digital, vintage, 3d, cyberpunk, manga, realistic, demonic, heavenly, comic, robotic");
+        return reply("Usage: sdxl [style] [prompt]\nAvailable styles: anime\nfantasy\npencil\ndigital\nvintage\n3d\ncyberpunk\nmanga\nrealistic\ndemonic\nheavenly\ncomic\mrobotic");
       }
 
       const [style, ...promptParts] = text;
@@ -47,20 +47,16 @@ module["exports"] = class {
       const response = await axios.get(url, { responseType: 'arraybuffer' });
       const imageBuffer = Buffer.from(response.data, 'binary');
 
-      const dir = path.join(__dirname, '/cache');
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-
-      const imagePath = path.join(dir, 'generate.png');
+      const imagePath = path.join(__dirname, 'generate.png');
       fs.writeFileSync(imagePath, imageBuffer);
 
       react("✅");
-      return reply(`Image generated and saved to ${imagePath}`, event.threadID, () => {
-        api.sendMessage({
-          body: `Here is your image based on the style: ${style}\nPrompt: ${prompt}`,
-          attachment: fs.createReadStream(imagePath)
-        }, event.threadID);
+      api.sendMessage({
+        body: `Here is your image based on the style: ${style}\nPrompt: ${prompt}`,
+        attachment: fs.createReadStream(imagePath)
+      }, event.threadID, event.messageID, () => {
+        // Clean up the generated image file after sending
+        fs.unlinkSync(imagePath);
       });
 
     } catch (error) {
@@ -69,4 +65,4 @@ module["exports"] = class {
     }
   }
 };
-    
+        
