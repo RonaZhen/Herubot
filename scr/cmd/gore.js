@@ -8,10 +8,10 @@ module.exports = {
     description: "Send a random gore video",
     usage: "[randomgore]",
     cooldown: 5,
-    accessableby: 0, // Accessible to everyone
+    accessableby: 1, // Accessible to everyone
     category: "Entertainment",
     prefix: false,
-    author: "chill",
+    author: "heru",
   },
 
   async run({ api, event, reply, react }) {
