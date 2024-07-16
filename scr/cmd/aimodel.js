@@ -99,7 +99,7 @@ module.exports = {
       }
 
       react("✅");
-      return reply(`🤖 | ${model.toUpperCase()} 𝐑𝐞𝐬𝐩𝐨𝐧𝐬𝐞\n━━━━━━━━━━━━━━━━━━\n${result}\n\nResponse Time: ${responseTime}s\n━━━━━━━━━━━━━━━━━━\nType "aimodel clear" if you want to clear the conversation with aimodel.`);
+      return reply(`🤖 | ${model.toUpperCase()} 𝐑𝐞𝐬𝐩𝐨𝐧𝐬𝐞\n━━━━━━━━━━━━━━━━━━\n${result}\n\nResponse Time: ${responseTime}s\n━━━━━━━━━━━━━━━━━━\nType "${model.toUpperCase()} clear" if you want to clear the conversation with aimodel.`);
     } catch (error) {
       react("❌");
       return reply(`An error occurred: ${error.message}`);
