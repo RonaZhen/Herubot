@@ -94,7 +94,12 @@ module.exports = {
       const response = await axios.get(url);
       const endTime = Date.now();
 
-      const result = response.data.response || response.data.result;
+      let result;
+      if (model.toLowerCase() === "blackbox") {
+        result = response.data.result; // Specific handling for blackbox response
+      } else {
+        result = response.data.response || response.data.result;
+      }
 
       if (!result) {
         react("❌");
