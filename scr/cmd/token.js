@@ -48,4 +48,3 @@ module.exports = {
     // This function is not used for this command
   }
 };
-      
