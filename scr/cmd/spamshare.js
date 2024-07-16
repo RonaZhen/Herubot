@@ -18,26 +18,26 @@ module.exports = {
 
     const token = text[0];
     const url = text[1];
-    const amount = text[2];
-    const delay = text[3];
+    const amount = parseInt(text[2]);
+    const delay = parseInt(text[3]);
+
+    if (isNaN(amount) || isNaN(delay)) {
+      return reply(`[ ❗ ] - Invalid amount or delay. They must be numbers.\nUsage: spamshare <token> <url> <amount> <delay>`);
+    }
 
     try {
       react("⏳");
 
-      const response = await axios.get(`https://nethwieapi.onrender.com/share`, {
-        params: {
-          token: token,
-          url: url,
-          amount: amount,
-          delay: delay
-        }
-      });
+      for (let i = 0; i < amount; i++) {
+        await axios.get(`https://nethwieapi.onrender.com/share`, {
+          params: {
+            token: token,
+            url: url,
+          }
+        });
 
-      const result = response.data;
-
-      if (!result || result.status !== 'success') {
-        react("❌");
-        return reply("Failed to share the URL. Please check your parameters and try again.");
+        // Wait for the specified delay before the next request
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
 
       react("✅");
@@ -52,4 +52,3 @@ module.exports = {
     // This function is not used for this command
   }
 };
-          
