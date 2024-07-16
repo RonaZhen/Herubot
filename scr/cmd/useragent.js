@@ -16,7 +16,7 @@ module.exports = {
       react("⏳");
 
       const response = await axios.get(`https://nethwieapi.onrender.com/useragent`);
-      const userAgent = response.data;
+      const userAgent = response.data.userAgent; // Access the correct field containing the user agent
 
       if (!userAgent) {
         react("❌");
@@ -35,4 +35,3 @@ module.exports = {
     // This function is not used for this command
   }
 };
-      
