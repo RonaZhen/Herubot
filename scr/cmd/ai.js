@@ -20,7 +20,6 @@ module.exports = {
           "mixtral",
           "catgpt",
           "blackbox",
-          "gemini",
           "gptweb",
           "palm2",
           "nemotron",
@@ -59,9 +58,6 @@ module.exports = {
         case "blackbox":
           url = `https://my-api-v1.onrender.com/api/blackbox?prompt=${encodeURIComponent(query)}`;
           break;
-        case "gemini":
-          url = `https://joshweb.click/api/gemini?prompt=${encodeURIComponent(query)}`;
-          break;
         case "gptweb":
           url = `https://joshweb.click/gptweb?prompt=${encodeURIComponent(query)}`;
           break;
@@ -91,7 +87,7 @@ module.exports = {
           break;
         default:
           react("❌");
-          return reply("Invalid model! Available models: gpt4o, gemma, mixtral, catgpt, blackbox, gemini, gptweb, palm2, nemotron, gpt41, gpt42, atom, meta, mistral, claude");
+          return reply("Invalid model! Available models: gpt4o, gemma, mixtral, catgpt, blackbox, gptweb, palm2, nemotron, gpt41, gpt42, atom, meta, mistral, claude");
       }
 
       const startTime = Date.now();
